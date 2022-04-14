@@ -73,10 +73,35 @@ Once your repository is created, you should always open your **project** rather 
 ## Warm-up exercises from tutorial
 
 1. Read in the fake garden harvest data. Find the data [here](https://github.com/llendway/scraping_etc/blob/main/2020_harvest.csv) and click on the `Raw` button to get a direct link to the data. After reading in the data, do one of the quick checks mentioned in the tutorial.
+
+```{r}
+datagarden <- read_csv("https://raw.githubusercontent.com/llendway/scraping_etc/main/2020_harvest.csv", 
+    col_types = cols(...1 = col_skip(), date = col_character(), 
+        weight = col_number()), 
+    na = "MISSING", 
+    skip = 2)
+
+```
+
   
 2. Read in this [data](https://www.kaggle.com/heeraldedhia/groceries-dataset) from the kaggle website. You will need to download the data first. Save it to your project/repo folder. Do some quick checks of the data to assure it has been read in appropriately.
 
+```{r}
+Groceries_dataset <- read_csv("Groceries_dataset.csv", 
+    col_types = cols(Date = col_character()))
+```
+
+
 3. Create a table using `gt` with data from your project or from the `garden_harvest` data if your project data aren't ready. Use at least 3 `gt()` functions.
+
+```{r}
+datagarden %>% 
+  gt() 
+  
+  
+  
+```
+
 
 4. CHALLENGE (not graded): Write code to replicate the table shown below (open the .html file to see it) created from the `garden_harvest` data as best as you can. When you get to coloring the cells, I used the following line of code for the `colors` argument:
   
@@ -91,6 +116,11 @@ colors = scales::col_numeric(
 
   
 5. Use `patchwork` operators and functions to combine at least two graphs using your project data or `garden_harvest` data if your project data aren't read.
+
+```{r}
+
+```
+
   
 ## Webscraping exercise (also from tutorial)
 
@@ -109,9 +139,112 @@ Use the data from the [Macalester Registrar's Fall 2017 Class Schedule](https://
   * Description
 
 Then, put all this information into one dataset (tibble or data.frame) Do not include any extraneous information like "Instructor: ".
+
+```{r}
+paths_allowed(paths = "https://www.macalester.edu/registrar/schedules/2017fall/class-schedule/#crs10008")
+
+fall_2017 <- read_html("https://www.macalester.edu/registrar/schedules/2017fall/class-schedule/#crs10008")
+```
+
+```{r}
+course_numbers <- fall_2017 %>% 
+  html_elements(".class-schedule-course-number") %>% 
+  html_text2()
+head(course_numbers)
+```
+
+```{r}
+course_names <- fall_2017 %>% 
+  html_elements(".class-schedule-course-title") %>%
+  html_text2()
+head(course_names)
+```
+
+```{r}
+course_df <- tibble(number=course_numbers, name=course_names)
+head(course_df)
+```
+
+```{r}
+course_day <- fall_2017 %>%
+  html_elements(".class-schedule-course-title+ .class-schedule-label") %>%
+  html_text2()
+head(course_day)
+```
+
+```{r}
+course_day <- fall_2017 %>%
+  html_elements("td.class-schedule-label:nth-child(3)") %>% 
+  html_text2() %>% 
+  str_sub(start = 7)
+
+head(course_day)
+```
+
+```{r}
+course_time <- fall_2017 %>% 
+  html_elements(".class-schedule-label:nth-child(4)") %>% 
+  html_text2() %>% 
+  str_sub(start = 7)
+head(course_time)
+```
+
+```{r}
+course_room <- fall_2017 %>% 
+  html_elements(".class-schedule-label:nth-child(5)") %>% 
+  html_text2() %>% 
+  str_sub(start = 7)
+head(course_room)
+```
+
+```{r}
+course_instructor <- fall_2017 %>% 
+  html_elements(".class-schedule-label:nth-child(6)") %>% 
+  html_text2() %>% 
+  str_sub(start = 13)
+head(course_instructor)
+```
+
+```{r}
+course_avail <- fall_2017 %>% 
+  html_elements(".class-schedule-label:nth-child(7)") %>%
+  html_text2() %>% 
+  str_sub(start = 14)
+head(course_avail)
+```
+
+```{r}
+course_gen <- fall_2017 %>% 
+  html_elements("#content p:nth-child(2)") %>% 
+  html_text2() %>% 
+  str_sub(start = 35) %>% 
+  str_replace_all("\n", " ")
+head(course_gen)
+```
+
+```{r}
+course_desc <- fall_2017 %>% 
+  html_elements(".collapsed p:nth-child(1)") %>% 
+  html_text2() %>% 
+  str_sub(start = 3) %>% 
+  str_replace_all("\n", "")
   
+head(course_desc)
+```
+
+```{r}
+course_df <- tibble(number=course_numbers, name=course_names, day=course_day, 
+                    time=course_time, room=course_room, instructor=course_instructor,
+                    availability=course_avail, generaled=course_gen, description=course_desc)
+head(course_df)
+```
+
 
 7. Create a graph that shows the number of sections offered per department. Hint: The department is a substring of the course number - there are `str_XXX()` functions that can help. Yes, COMP and MATH are the same department, but for this exercise you can just show the results by four letter department code, e.g., with COMP and MATH separate.
+
+```{r}
+
+```
 
 
 8. Analyze the typical length of course names by department. To do so, create a new data table based on your courses data table, with the following changes:
