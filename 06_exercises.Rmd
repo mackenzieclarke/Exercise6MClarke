@@ -227,7 +227,8 @@ course_desc <- fall_2017 %>%
   html_elements(".collapsed p:nth-child(1)") %>% 
   html_text2() %>% 
   str_sub(start = 3) %>% 
-  str_replace_all("\n", "")
+  str_replace_all("\n", "") %>% 
+  str_replace_all("\r", "")
   
 head(course_desc)
 ```
@@ -243,7 +244,13 @@ head(course_df)
 7. Create a graph that shows the number of sections offered per department. Hint: The department is a substring of the course number - there are `str_XXX()` functions that can help. Yes, COMP and MATH are the same department, but for this exercise you can just show the results by four letter department code, e.g., with COMP and MATH separate.
 
 ```{r}
-
+course_df %>%
+  mutate(department = substr(number, 1, 4)) %>% 
+  ggplot() +
+    geom_bar(aes(y = department)) +
+  labs(x = "Department", 
+       y = "", 
+       title = "Number of Sections Offered Per Department in Fall of 2017")
 ```
 
 
@@ -253,6 +260,9 @@ head(course_df)
   * Remove departments that have fewer than 10 sections of courses. To do so, group by department, then remove observations in groups with fewer than 10 sections (Hint: use filter with n()). Then `ungroup()` the data.  
   * Create a visualization of the differences across groups in lengths of course names or course descriptions. Think carefully about the visualization you should be using!
 
+```{r}
+
+```
 
   
 
