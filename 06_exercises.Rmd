@@ -96,8 +96,13 @@ Groceries_dataset <- read_csv("Groceries_dataset.csv",
 
 ```{r}
 datagarden %>% 
-  gt() 
-  
+  gt() %>% 
+  tab_header("Garden Harvest Data") %>% 
+  tab_source_note("Data Courtesy of Lisa Lendway") %>%
+  tab_style(cell_text(weight = "bold"),
+            locations = cells_body(
+            columns = 2,
+            rows = 1:5))
   
   
 ```
