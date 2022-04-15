@@ -12,7 +12,7 @@ output:
 
 
 ```{r setup, include=FALSE}
-#knitr::opts_chunk$set(echo = TRUE, error=TRUE, message=FALSE, warning=FALSE)
+knitr::opts_chunk$set(echo = TRUE, error=TRUE, message=FALSE, warning=FALSE)
 ```
 
 ```{r libraries}
@@ -117,13 +117,51 @@ colors = scales::col_numeric(
       ) %>% as.character()
 ```
 
-![](garden_table.html){width=600, height=1000}
+
 
   
 5. Use `patchwork` operators and functions to combine at least two graphs using your project data or `garden_harvest` data if your project data aren't read.
 
 ```{r}
+graph1 <- garden_harvest %>% 
+  filter(vegetable %in% "tomatoes") %>% 
+  group_by(variety) %>% 
+  mutate(weight_lb = weight * 0.00220462) %>%
+  ggplot(aes(x = weight_lb, 
+             y = fct_reorder(variety, date, min, .desc = TRUE), 
+             color = variety, 
+             fill = variety))+
+  geom_col() +
+  labs(x = "Weight (lbs)", 
+       y = "", 
+       title = "Total Tomato Harvest for Each Variety") +
+   theme(legend.position = "none") 
 
+```
+
+```{r}
+graph2 <- garden_harvest %>% 
+  filter(vegetable %in% c("kale", "spinach", "lettuce", "tomatoes")) %>% 
+  group_by(vegetable, date) %>% 
+  summarize(daily_harvest_lb = sum(weight)*0.00220462) %>% 
+  mutate(cum_harvest_lb = cumsum(daily_harvest_lb)) %>% 
+  ggplot(aes(x = date, 
+             y = cum_harvest_lb, 
+             color = vegetable)) +
+  geom_line() +
+  scale_color_manual(values = c("kale" = "darkslategray",
+                                "spinach" = "darkgreen",
+                                "lettuce" = "chartreuse", 
+                                "tomatoes" = "red")) +
+  labs(x = "", 
+       y = "",
+       title = "Cumulative harvest (lb)") +
+  theme(legend.position = "none")
+```
+
+```{r}
+(graph1/graph2) + 
+  plot_annotation(title = "Total Tomato Harvest Compared With Cumulative Harvest of Multiple Vegetables") 
 ```
 
   
@@ -266,7 +304,25 @@ course_df %>%
   * Create a visualization of the differences across groups in lengths of course names or course descriptions. Think carefully about the visualization you should be using!
 
 ```{r}
+modified_data <- course_df %>%
+  mutate(department = substr(number, 1, 4)) %>% 
+  mutate(title_length = str_length(name)) %>% 
+  mutate(desc_length = str_length(description)) %>% 
+  group_by(department) %>%
+  mutate(count = n()) %>% 
+  filter(count > 10) %>% 
+  ungroup()
 
+modified_data %>% 
+  ggplot(aes(x = title_length,
+             y = department)) +
+  geom_boxplot() +
+  stat_summary(fun.x = mean, geom = "point", shape = "circle", size = 1, 
+               color = "blue", fill = "blue") +
+  labs(title = "Course Title Length by Academic Department",
+       x = "Length (characters)", 
+       y = "Department")
+  
 ```
 
   
